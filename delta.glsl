@@ -12,7 +12,10 @@ float sphere (vec3 pos, float r) {
 }
 
 vec3 getSphereNormal(vec3 pos, float r){
-    return vec3(1.0);
+    return normalize(vec3(
+        sphere(pos, r) - sphere(vec3(pos.x - EP, pos.y, pos.z), r),
+        sphere(pos, r) - sphere(vec3(pos.x, pos.y - EP, pos.z), r),
+        sphere(pos, r) - sphere(vec3(pos.x, pos.y, pos.z - EP), r)));
 }
 
 void main(){
@@ -26,7 +29,7 @@ void main(){
     vec3 ray = normalize(vec3(pixLoc, 0.0) - camera);
     vec3 pivot = camera;
 
-    float sphereRadius = 1.0;
+    float sphereRadius = 1.1;
 
     for(int i=0;i<16;i++) {
         float d = sphere(pivot, sphereRadius);
