@@ -32,7 +32,11 @@ void main(){
     float sphereRadius = 1.1;
 
     for(int i=0;i<16;i++) {
-        float d = sphere(pivot, sphereRadius);
+        // here I'm changeing the location of the sphere by adding coordinates
+        // adding x moves the sphere to the left
+        // adding y moves the sphere to the bottom
+        // adding z pushes the sphere further from the camera
+        float d = sphere(pivot+vec3(0.0, 0.1, 0.1), sphereRadius); 
         if (d < EP){
             color = getSphereNormal(pivot, sphereRadius);
             break;
