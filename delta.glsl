@@ -58,7 +58,7 @@ void main(){
     vec3 boxSize = vec3(0.5,0.5,0.5);
 
     for(int i=0;i<SAMPLE;i++) {
-        vec3 boxP = (rotateY(0.1) * vec4(pivot, 1.0)).xyz;
+        vec3 boxP = (rotateY(0.2) * vec4(pivot+vec3(0.0,0.1,0.2), 1.0)).xyz;
         float d = box(boxP, boxSize);
         if (d < EP){
             color = boxNormal(boxP, boxSize);
