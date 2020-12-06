@@ -4,7 +4,7 @@ precision mediump float;
 #endif
 
 #define EP 0.0001
-#define SAMPLE 64
+#define SAMPLE 128
 
 uniform vec2 u_resolution; // width, height
 
@@ -25,6 +25,18 @@ float box( vec3 p, vec3 b )
   return length(max(q,0.0)) + min(max(q.x,max(q.y,q.z)),0.0);
 }
 
+mat4 rotateY(float theta) {
+    float c = cos(theta);
+    float s = sin(theta);
+
+    return mat4(
+        vec4(c, 0, s, 0),
+        vec4(0, 1, 0, 0),
+        vec4(-s, 0, c, 0),
+        vec4(0, 0, 0, 1)
+    );
+}
+
 vec3 boxNormal(vec3 pos, vec3 b){
     return normalize(vec3(
         box(pos, b) - box(vec3(pos.x - EP, pos.y, pos.z), b),
@@ -43,18 +55,13 @@ void main(){
     vec3 ray = normalize(vec3(pixLoc, 0.0) - camera);
     vec3 pivot = camera;
 
-    // float sphereRadius = 1.1;
     vec3 boxSize = vec3(0.5,0.5,0.5);
 
     for(int i=0;i<SAMPLE;i++) {
-        // here I'm changeing the location of the sphere by adding coordinates
-        // adding x moves the sphere to the left
-        // adding y moves the sphere to the bottom
-        // adding z pushes the sphere further from the camera
-        // float d = sphere(pivot+vec3(0.0, 0.1, 0.1), sphereRadius); 
-        float d = box(pivot, boxSize);
+        vec3 boxP = (rotateY(0.1) * vec4(pivot, 1.0)).xyz;
+        float d = box(boxP, boxSize);
         if (d < EP){
-            color = boxNormal(pivot, boxSize);
+            color = boxNormal(boxP, boxSize);
             break;
         }
         pivot += ray*d; // move d towards the ray
