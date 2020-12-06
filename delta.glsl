@@ -1,4 +1,6 @@
 
+#extension GL_OES_standard_derivatives : enable
+
 #ifdef GL_ES
 precision mediump float;
 #endif
@@ -8,24 +10,13 @@ precision mediump float;
 
 uniform vec2 u_resolution; // width, height
 
-float sphere (vec3 pos, float r) {
-    return length(pos) - r;
-}
-
-vec3 sphereNormal(vec3 pos, float r){
-    return normalize(vec3(
-        sphere(pos, r) - sphere(vec3(pos.x - EP, pos.y, pos.z), r),
-        sphere(pos, r) - sphere(vec3(pos.x, pos.y - EP, pos.z), r),
-        sphere(pos, r) - sphere(vec3(pos.x, pos.y, pos.z - EP), r)));
-}
-
 float box( vec3 p, vec3 b )
 {
   vec3 q = abs(p) - b;
   return length(max(q,0.0)) + min(max(q.x,max(q.y,q.z)),0.0);
 }
 
-mat4 rotateY(float theta) {
+mat4 rotMatY(float theta) {
     float c = cos(theta);
     float s = sin(theta);
 
@@ -37,11 +28,29 @@ mat4 rotateY(float theta) {
     );
 }
 
-vec3 boxNormal(vec3 pos, vec3 b){
+vec3 rotateY(vec3 p, float theta){
+    mat4 mat = rotMatY(theta);
+    return (mat*vec4(p,1.0)).xyz;
+}
+
+float scene(vec3 p) {
+    vec3 box1Size = vec3(0.2, 0.2, 0.3);
+    vec3 box1Pos = vec3(0.1, 0.2, 0.0);
+
+    vec3 box2Size = vec3(0.4, 0.15, 0.15);
+    vec3 box2Pos =rotateY(vec3(-0.35, 0.1, 0.1), 3.14*0.25);
+
+    float box1 = box(p+box1Pos, box1Size);
+    float box2 = box(p+box2Pos, box2Size);
+
+    return max(box1, -box2);
+}
+
+vec3 sceneNormal(vec3 pos){
     return normalize(vec3(
-        box(pos, b) - box(vec3(pos.x - EP, pos.y, pos.z), b),
-        box(pos, b) - box(vec3(pos.x, pos.y - EP, pos.z), b),
-        box(pos, b) - box(vec3(pos.x, pos.y, pos.z - EP), b)));
+        scene(pos) - scene(vec3(pos.x - EP, pos.y, pos.z)),
+        scene(pos) - scene(vec3(pos.x, pos.y - EP, pos.z)),
+        scene(pos) - scene(vec3(pos.x, pos.y, pos.z - EP))));
 }
 
 void main(){
@@ -58,10 +67,9 @@ void main(){
     vec3 boxSize = vec3(0.5,0.5,0.5);
 
     for(int i=0;i<SAMPLE;i++) {
-        vec3 boxP = (rotateY(0.2) * vec4(pivot+vec3(0.0,0.1,0.2), 1.0)).xyz;
-        float d = box(boxP, boxSize);
+        float d = scene(pivot);
         if (d < EP){
-            color = boxNormal(boxP, boxSize);
+            color = sceneNormal(pivot);
             break;
         }
         pivot += ray*d; // move d towards the ray
